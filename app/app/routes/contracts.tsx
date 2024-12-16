@@ -2,6 +2,7 @@ import { type MetaFunction } from "@remix-run/node";
 import { useEffect, useState } from 'react';
 import { getWeb3Instance, getContractInstance } from '../../utils/web3.js';
 import { abi as VotierABI, bytecode } from '../../../smart-contracts/build/contracts/Votier.json';
+import { Link } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -10,7 +11,7 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export default function CreateContract() {
+export default function Contracts() {
   const [maxCandidatesCount, setMaxCandidatesCount] = useState(""); 
   const [contracts, setContracts] = useState([]); 
 
@@ -65,10 +66,9 @@ export default function CreateContract() {
 
   return (
     <>
-    <div style={{marginBottom: 20}} className="nav-buttons">
-      <a style={style.navButtonStyle} href="/">Candidates</a>
-      <a style={style.navButtonStyle} href="/votes">Votes</a>
-    </div>
+   <div style={{marginBottom: 20}} className="nav-buttons">
+      <Link style={style.navButtonStyle} to={`/`}>Home</Link>
+      </div>
     <div>
     <div style={{ marginBottom:  20}}>
         <h1 style={{fontSize:32}} className="title">Contracts List ({contracts.length})</h1>
@@ -76,7 +76,9 @@ export default function CreateContract() {
     <ul style={{ marginBottom:  20}} className="candidate-items">
         {contracts.map((contract, index) => (
           <div style={{border:'1px solid #555', borderRadius: 10, padding: 10, marginBottom: 10, display:'flex', justifyContent: 'space-between'}} key={index}>
-            <p style={{fontSize: 32}}>{contract.address}</p>
+            <Link to={`/candidates/${contract.address}`}>
+              <p style={{fontSize: 32}}>{contract.address}</p>
+            </Link>
           </div>
         ))}
       </ul>

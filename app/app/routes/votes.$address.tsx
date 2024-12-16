@@ -1,7 +1,7 @@
 import { LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useEffect, useState } from 'react';
 import { getWeb3Instance, getContractInstance, getContractInstanceByAddress } from '../../utils/web3.js';
-import { useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -51,9 +51,9 @@ export default function Votes() {
   return (
     <>
     <div style={{marginBottom: 20}} className="nav-buttons">
-      <a style={style.navButtonStyle} href="/">Candidates</a>
-      <a style={style.navButtonStyle} href="/createContract">Create a New Contract</a>
-    </div>
+      <Link style={style.navButtonStyle} to={`/contracts`}>Create a New Contract</Link>
+      <Link style={style.navButtonStyle} to={`/candidates/${votingContractAddress}`}>Candidates</Link>
+      </div>
       <div className="votes-list">
       <div style={{ marginBottom:  20}}>
         <h1 style={{fontSize:32}} className="title">Votes ({votes.length})</h1>

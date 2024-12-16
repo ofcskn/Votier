@@ -1,14 +1,14 @@
 import { json, LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useEffect, useState } from 'react';
-import { getWeb3Instance, getContractInstance, getContractInstanceByAddress, getContractCreationTransactions } from '../../utils/web3.js';
+import { getWeb3Instance, getContractInstance } from '../../utils/web3.js';
 import Alert from '@mui/material/Alert';
 import { Snackbar } from "@mui/material";
 import { Link, useLoaderData } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Contract by The Address" },
-    { name: "description", content: "List contracts by the address!" },
+    { title: "Votier App" },
+    { name: "description", content: "Welcome to Votier!" },
   ];
 };
 
@@ -18,20 +18,20 @@ export async function loader({
   return params;
 }
 
-export default function VotingByAddress() {
+export default function Candidates() {
   const [errorText, setErrorText] = useState("");
   const [candidateName, setCandidateName] = useState("");
   const [candidates, setCandidates] = useState([]);
   const [open, setOpen] = useState(false);
   const [maxCandidatesCount, setMaxCandidatesCount] = useState("");
-
+  
   const data = useLoaderData<typeof loader>();
-  const votingFor = data.address; 
+  const votingContractAddress = data.address; 
 
   const voteCandidate = async(candidate) => {
     try {
       const web3 = await getWeb3Instance();
-      const contract = await getContractInstanceByAddress(web3, votingFor);
+      const contract = await getContractInstance(web3);
       
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       const candidateData = await contract.methods.vote(candidate[0]).send({ from: accounts[0], gas: 300000});
@@ -54,7 +54,7 @@ export default function VotingByAddress() {
     if ( candidateName != null && candidateName != ""){
       try {
         const web3 = await getWeb3Instance();
-        const contract = await getContractInstanceByAddress(web3, votingFor);
+        const contract = await getContractInstance(web3);
         
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         const candidateData = await contract.methods.addCandidate(candidateName).send({ from: accounts[0], gas: 300000});
@@ -70,8 +70,7 @@ export default function VotingByAddress() {
     const fetchCandidates = async () => {
       try {
         const web3 = await getWeb3Instance();
-        const contract = await getContractInstanceByAddress(web3, votingFor);
-        
+        const contract = await getContractInstance(web3);
         const candidateData = await contract.methods.getAllCandidates().call();
 
         const maxCandidatesCount = await contract.methods.maxCandidatesCount().call();
@@ -90,11 +89,10 @@ export default function VotingByAddress() {
 
   return (
     <>
-      <div style={{marginBottom: 20}} className="nav-buttons">
-      <Link style={style.navButtonStyle} to={`/`}>Home Page</Link>
-      <Link style={style.navButtonStyle} to={`/candidates/${votingFor}`}>Candidates</Link>
-      <Link style={style.navButtonStyle} to={`/votes/${votingFor}`}>Votes</Link>
-        </div>
+    <div style={{marginBottom: 20}} className="nav-buttons">
+      <Link style={style.navButtonStyle} to={`/contracts`}>Contracts</Link>
+      <Link style={style.navButtonStyle} to={`/votes/${votingContractAddress}`}>Votes</Link>
+      </div>
     <Snackbar open={open} autoHideDuration={3000} onClose={handleClose}>
         <Alert onClose={handleClose} severity={"error"} sx={{ width: '100%' }}>
           {errorText}
