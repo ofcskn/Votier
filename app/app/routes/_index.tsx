@@ -16,6 +16,7 @@ export default function Index() {
   const [candidateName, setCandidateName] = useState("");
   const [candidates, setCandidates] = useState([]);
   const [open, setOpen] = useState(false);
+  const [maxCandidatesCount, setMaxCandidatesCount] = useState("");
 
   const voteCandidate = async(candidate) => {
     try {
@@ -61,6 +62,10 @@ export default function Index() {
         const web3 = await getWeb3Instance();
         const contract = await getContractInstance(web3);
         const candidateData = await contract.methods.getAllCandidates().call();
+
+        const maxCandidatesCount = await contract.methods.maxCandidatesCount().call();
+        setMaxCandidatesCount(maxCandidatesCount.toString());
+
       setCandidates(candidateData);
       } catch (error) {
         setErrorText(error);
@@ -82,7 +87,7 @@ export default function Index() {
       <div className="candidate-list">
       <div style={{ marginBottom:  20}}>
         <h1 style={{fontSize:32}} className="title">Candidate List ({candidates.length})</h1>
-        <p style={{fontSize: 16}}>Choose a candidate for the Votier election. The list of candidates sorted by name!</p>
+        <p style={{fontSize: 16}}>Choose a candidate for the Votier election. The list of candidates sorted by name! Max candidates can be {maxCandidatesCount}.</p>
       </div>
       <ul style={{ marginBottom:  20}} className="candidate-items">
         {candidates.sort((a, b) => {
