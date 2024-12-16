@@ -2,6 +2,7 @@
 var Votier = artifacts.require("Votier");
 
 module.exports = function(deployer) {
+  const maxCandidatesCount = 10; 
   // Deploy the contract
-  deployer.deploy(Votier);
+  deployer.deploy(Votier, maxCandidatesCount);
 };

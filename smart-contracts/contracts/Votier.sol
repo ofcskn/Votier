@@ -25,6 +25,7 @@ contract Votier {
     mapping(uint => Candidate) public candidates; // Mapping of candidate ID to Candidate details
     mapping(address => Voter) public voters; // Mapping of voter address to Voter details
     uint public candidatesCount; // Total number of candidates added
+    uint public maxCandidatesCount; // Max candidates can be joined to the election
     mapping(string => bool) public candidateNames; // Mapping to track if a candidate name already exists
 
     // Event emitted when a new candidate is added
@@ -45,7 +46,9 @@ contract Votier {
     /**
      * @dev Constructor sets the deploying address as the admin.
      */
-    constructor() {
+    constructor(uint _maxCandidatesCount) {
+        // Default: 5 candidates
+        maxCandidatesCount = _maxCandidatesCount == 0 ? 5 : _maxCandidatesCount;
         admin = msg.sender;
         emit AdminInitialized(admin);
         emit ContractDeployed("VotingSystem deployed successfully!");
@@ -56,6 +59,7 @@ contract Votier {
      * @param _name The name of the candidate to be added.
      */
     function addCandidate(string memory _name) public onlyAdmin {
+        require(maxCandidatesCount > candidatesCount, "Candidates count for an election cannot be equal with max value!");
         require(bytes(_name).length > 0, "Candidate name cannot be empty.");
         require(!candidateNames[_name], "Candidate name already exists.");
         candidatesCount++;
