@@ -56,6 +56,7 @@ contract Votier {
      * @param _name The name of the candidate to be added.
      */
     function addCandidate(string memory _name) public onlyAdmin {
+        require(bytes(_name).length > 0, "Candidate name cannot be empty.");
         require(!candidateNames[_name], "Candidate name already exists.");
         candidatesCount++;
         candidates[candidatesCount] = Candidate(candidatesCount, _name, 0);
