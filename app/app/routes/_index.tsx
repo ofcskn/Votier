@@ -17,8 +17,8 @@ export default function Index() {
       try {
         const web3 = await getWeb3Instance();
         const contract = await getContractInstance(web3);
-
-        const accounts = await web3.eth.getAccounts();
+        
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         const candidateData = await contract.methods.addCandidate(candidateName).send({ from: accounts[0], gas: 300000});
         const candidateCountData = await contract.methods.getAllCandidates().call();
         setCandidates(candidateCountData);
@@ -31,6 +31,7 @@ export default function Index() {
       try {
         const web3 = await getWeb3Instance();
         const contract = await getContractInstance(web3);
+
         const candidateData = await contract.methods.getAllCandidates().call();
         setCandidates(candidateData);
       } catch (error) {
