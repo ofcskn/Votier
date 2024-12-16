@@ -1,6 +1,8 @@
 import { json, type MetaFunction } from "@remix-run/node";
 import { useEffect, useState } from 'react';
 import { getWeb3Instance, getContractInstance } from '../../utils/web3.js';
+import Alert from '@mui/material/Alert';
+import { Snackbar } from "@mui/material";
 
 export const meta: MetaFunction = () => {
   return [
@@ -10,8 +12,10 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Index() {
+  const [errorText, setErrorText] = useState("");
   const [candidateName, setCandidateName] = useState("");
   const [candidates, setCandidates] = useState([]);
+  const [open, setOpen] = useState(false);
 
   const voteCandidate = async(candidate) => {
     try {
@@ -23,9 +27,17 @@ export default function Index() {
       const candidateCountData = await contract.methods.getAllCandidates().call();
       setCandidates(candidateCountData);
     } catch (error) {
-      console.error('Error adding a new candidate:', error);
+      setErrorText(error.message);
+      setOpen(true);
+      console.error('Error adding a new candidate:', name);
+      console.error('Error adding a new candidate:', error.message);
     }
   }
+ 
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setOpen(false);
+  };
 
   const addCandidate = async ()=> {
     if ( candidateName != null && candidateName != ""){
@@ -38,7 +50,8 @@ export default function Index() {
         const candidateCountData = await contract.methods.getAllCandidates().call();
         setCandidates(candidateCountData);
       } catch (error) {
-        console.error('Error adding a new candidate:', error);
+      setErrorText(error.message);
+        setOpen(true);
       }
     }
   }
@@ -50,6 +63,8 @@ export default function Index() {
         const candidateData = await contract.methods.getAllCandidates().call();
       setCandidates(candidateData);
       } catch (error) {
+        setErrorText(error);
+        setOpen(true);
         console.error('Error fetching candidates:', error);
       }
     };
@@ -58,8 +73,13 @@ export default function Index() {
   }, []);
 
   return (
-    
-    <div className="candidate-list">
+    <>
+    <Snackbar open={open} autoHideDuration={3000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity={"error"} sx={{ width: '100%' }}>
+          {errorText}
+        </Alert>
+      </Snackbar>
+      <div className="candidate-list">
       <h2 className="title">Candidate List ({candidates.length})</h2>
       <ul className="candidate-items">
         {candidates.map((candidate, index) => (
@@ -75,5 +95,6 @@ export default function Index() {
       <input placeholder="Candidate Name" style={{background:'#fff', padding:"10px", height: 50, borderRadius: 16, color: '#000', marginRight: 10}} value={candidateName} onChange={e => setCandidateName(e.target.value)} />
       <button style={{background: '#fff', color: '#000', padding: "8px 8px", borderRadius: 16, fontSize: 24}} onClick={addCandidate}>Add Candidate</button>
     </div>
+    </>
   );
 }
