@@ -25,6 +25,7 @@ contract Votier {
     mapping(uint => Candidate) public candidates; // Mapping of candidate ID to Candidate details
     mapping(address => Voter) public voters; // Mapping of voter address to Voter details
     uint public candidatesCount; // Total number of candidates added
+    mapping(string => bool) public candidateNames; // Mapping to track if a candidate name already exists
 
     // Event emitted when a new candidate is added
     event CandidateAdded(uint id, string name);
@@ -55,8 +56,10 @@ contract Votier {
      * @param _name The name of the candidate to be added.
      */
     function addCandidate(string memory _name) public onlyAdmin {
+        require(!candidateNames[_name], "Candidate name already exists.");
         candidatesCount++;
         candidates[candidatesCount] = Candidate(candidatesCount, _name, 0);
+        candidateNames[_name] = true; // Mark the name as used
         emit CandidateAdded(candidatesCount, _name);
     }
 
@@ -74,6 +77,19 @@ contract Votier {
         emit Voted(msg.sender, _candidateId);
     }
 
+    // Function to get a candidate by ID (no need to manually define it)
+    // The getter is automatically available due to `public` keyword in the mapping
+
+    // Function to get all candidates (iterate using candidatesCount)
+    function getAllCandidates() public view returns (Candidate[] memory) {
+        Candidate[] memory allCandidates = new Candidate[](candidatesCount);
+        
+        for (uint i = 1; i <= candidatesCount; i++) {
+            allCandidates[i - 1] = candidates[i];
+        }
+        
+        return allCandidates;
+    }
     /**
      * @dev Determines the winner of the voting process.
      * @return winnerId The ID of the winning candidate.
