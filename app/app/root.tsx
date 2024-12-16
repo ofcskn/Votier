@@ -32,7 +32,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <div style={{ width: "60%", padding:50, border: "1 solid #fff", borderRadius: 50, margin: "auto", marginTop: 50}}>
+          {children}
+        </div>
         <ScrollRestoration />
         <Scripts />
       </body>
