@@ -80,13 +80,21 @@ export default function Index() {
         </Alert>
       </Snackbar>
       <div className="candidate-list">
-      <h2 className="title">Candidate List ({candidates.length})</h2>
-      <ul className="candidate-items">
-        {candidates.map((candidate, index) => (
+      <div style={{ marginBottom:  20}}>
+        <h1 style={{fontSize:32}} className="title">Candidate List ({candidates.length})</h1>
+        <p style={{fontSize: 16}}>Choose a candidate for the Votier election. The list of candidates sorted by name!</p>
+      </div>
+      <ul style={{ marginBottom:  20}} className="candidate-items">
+        {candidates.sort((a, b) => {
+          // Compare names in descending order
+          if (a.name > b.name) return 1;
+          if (a.name < b.name) return -1;
+          return 0;
+        }).map((candidate, index) => (
           <div style={{border:'1px solid #555', borderRadius: 10, padding: 10, marginBottom: 10, display:'flex', justifyContent: 'space-between'}} key={index}>
-            <p>{candidate.name}</p>
+            <p style={{fontSize: 32}}>{candidate.name}</p>
             <div>
-              <span style={{background:'#fff', color: '#000', padding: 8, borderRadius: 50, marginRight: 15, fontSize: 20}}>{candidate.voteCount.toString()}</span>
+              <span style={{background:'#fff', color: '#000', padding: 8, borderRadius: 50, marginRight: 15, fontSize: 24}}>{candidate.voteCount.toString()}</span>
               <button onClick={()=> voteCandidate(candidate)}>Vote this</button>
             </div>
           </div>
