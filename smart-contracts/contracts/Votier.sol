@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.13;
 
 /**
  * @title Votier
@@ -32,6 +32,9 @@ contract Votier {
     // Event emitted when a vote is cast
     event Voted(address voter, uint candidateId);
 
+    event AdminInitialized(address admin); // Debugging event
+    event ContractDeployed(string message); // Debugging event
+
     // Modifier to restrict access to admin-only functions
     modifier onlyAdmin() {
         require(msg.sender == admin, "Only admin can perform this action");
@@ -43,6 +46,8 @@ contract Votier {
      */
     constructor() {
         admin = msg.sender;
+        emit AdminInitialized(admin);
+        emit ContractDeployed("VotingSystem deployed successfully!");
     }
 
     /**
