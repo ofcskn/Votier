@@ -38,6 +38,10 @@ export default function Votes() {
 
   return (
     <>
+    <div style={{marginBottom: 20}} className="nav-buttons">
+      <a style={style.navButtonStyle} href="/">Candidates</a>
+      <a style={style.navButtonStyle} href="/votes">Votes</a>
+    </div>
       <div className="votes-list">
       <div style={{ marginBottom:  20}}>
         <h1 style={{fontSize:32}} className="title">Votes ({votes.length})</h1>
@@ -53,4 +57,14 @@ export default function Votes() {
     </div>
     </>
   );
+}
+
+const style = {
+  navButtonStyle: {
+    background: '#fff',
+    padding: '10px',
+    color: '#000',
+    marginRight: 10,
+    borderRadius: 10
+  }
 }

@@ -79,6 +79,10 @@ export default function Index() {
 
   return (
     <>
+      <div style={{marginBottom: 20}} className="nav-buttons">
+      <a style={style.navButtonStyle} href="/">Candidates</a>
+      <a style={style.navButtonStyle} href="/votes">Votes</a>
+    </div>
     <Snackbar open={open} autoHideDuration={3000} onClose={handleClose}>
         <Alert onClose={handleClose} severity={"error"} sx={{ width: '100%' }}>
           {errorText}
@@ -110,4 +114,14 @@ export default function Index() {
     </div>
     </>
   );
+}
+
+const style = {
+  navButtonStyle: {
+    background: '#fff',
+    padding: '10px',
+    color: '#000',
+    marginRight: 10,
+    borderRadius: 10
+  }
 }
