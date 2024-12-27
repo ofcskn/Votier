@@ -19,17 +19,18 @@ export default function Contracts() {
     const fetchContracts = async () => {
         const web3 = await getWeb3Instance();
         const contract = await getContractInstance(web3);
-        contract.getPastEvents('ContractDeployed', {
-          fromBlock: 0,   // Starting block (can change based on your needs)
-          toBlock: 'latest'  // You can specify the latest block or a specific block
-      })
-      .then(contracts => {
-          console.log('Past contracts:', contracts);
-          setContracts(contracts);
-      })
-      .catch(err => {
-          console.error('Error fetching contracts:', err);
-      });
+        const events = await contract.getPastEvents("ContractDeployed", {
+            fromBlock: 0,
+            toBlock: "latest"
+        });
+        console.log(events);
+  
+        const deployedContracts = events.map(event => ({
+            creator: event.returnValues.creator,
+            contractAddress: event.returnValues.contractAddress
+        }));
+
+    
     };
 
     fetchContracts();
