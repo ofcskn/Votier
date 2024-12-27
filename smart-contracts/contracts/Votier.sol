@@ -19,11 +19,16 @@ contract Votier {
     struct Voter {
         bool hasVoted; // Whether the voter has already voted
         uint votedCandidateId; // ID of the candidate the voter voted for
+        uint votedTime;
     }
+
+    uint public immutable creationTime;
+    uint public immutable endVotingTime;
 
     address public admin; // Address of the admin managing the voting system
     mapping(uint => Candidate) public candidates; // Mapping of candidate ID to Candidate details
     mapping(address => Voter) public voters; // Mapping of voter address to Voter details
+    uint public votesCount; // Total number of votes added
     uint public candidatesCount; // Total number of candidates added
     uint public maxCandidatesCount; // Max candidates can be joined to the election
     mapping(string => bool) public candidateNames; // Mapping to track if a candidate name already exists
@@ -32,7 +37,7 @@ contract Votier {
     event CandidateAdded(uint id, string name);
 
     // Event emitted when a vote is cast
-    event Voted(address voter, uint candidateId);
+    event Voted(address voter, uint candidateId, uint votedTime);
 
     event AdminInitialized(address admin); // Debugging event
     event ContractDeployed(string message); // Debugging event
@@ -46,9 +51,15 @@ contract Votier {
     /**
      * @dev Constructor sets the deploying address as the admin.
      */
-    constructor(uint _maxCandidatesCount) {
-        // Default: 5 candidates
-        maxCandidatesCount = _maxCandidatesCount == 0 ? 5 : _maxCandidatesCount;
+    constructor(uint _maxCandidatesCount, uint _endVotingTime) {
+        uint normalizedEndVotingTime = _endVotingTime / 1000;
+        require(_maxCandidatesCount > 1 && _maxCandidatesCount < 50, "Candidates must be at least two people and <50.");
+        require(normalizedEndVotingTime > block.timestamp, "End voting time must be in the future");
+        require(normalizedEndVotingTime >= block.timestamp + 5 minutes, "Voting must last at least 5 minutes");
+
+        creationTime = block.timestamp;
+        endVotingTime = normalizedEndVotingTime;
+        maxCandidatesCount = _maxCandidatesCount;
         admin = msg.sender;
         emit AdminInitialized(admin);
         emit ContractDeployed("VotingSystem deployed successfully!");
@@ -59,6 +70,7 @@ contract Votier {
      * @param _name The name of the candidate to be added.
      */
     function addCandidate(string memory _name) public onlyAdmin {
+        require(block.timestamp < endVotingTime, "Voting closed due to date.");
         require(maxCandidatesCount > candidatesCount, "Candidates count for an election cannot be equal with max value!");
         require(bytes(_name).length > 0, "Candidate name cannot be empty.");
         require(!candidateNames[_name], "Candidate name already exists.");
@@ -73,13 +85,16 @@ contract Votier {
      * @param _candidateId The ID of the candidate to vote for.
      */
     function vote(uint _candidateId) public {
+        require(block.timestamp < endVotingTime, "Voting closed due to date.");
         require(!voters[msg.sender].hasVoted, "You have already voted");
         require(_candidateId > 0 && _candidateId <= candidatesCount, "Invalid candidate ID");
+        require(candidatesCount > 1, "There must be at least two candidates for a vote to be cast.");
 
-        voters[msg.sender] = Voter(true, _candidateId);
+        voters[msg.sender] = Voter(true, _candidateId, block.timestamp);
         candidates[_candidateId].voteCount++;
+        votesCount++;
 
-        emit Voted(msg.sender, _candidateId);
+        emit Voted(msg.sender, _candidateId, block.timestamp);
     }
 
     // Function to get a candidate by ID (no need to manually define it)
@@ -102,6 +117,10 @@ contract Votier {
      * @return highestVotes The highest number of votes received by a candidate.
      */
     function getWinner() public view returns (uint winnerId, string memory winnerName, uint highestVotes) {
+        require(block.timestamp > endVotingTime, "Voting continues due to time.");
+        require(candidatesCount > 1, "There must be at least two candidates for a vote to get winner.");
+        require(votesCount > 1, "There must be at least two votes to get winner.");
+
         uint highestVoteCount = 0;
         uint winningCandidateId = 0;
 
