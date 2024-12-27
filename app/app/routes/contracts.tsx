@@ -18,18 +18,17 @@ export default function Contracts() {
   const [endVotingDate, setEndVotingDate] = useState(""); 
   const [loading, setLoading] = useState(true); 
 
+  const fetchContracts = async () => {
+    const web3 = await getWeb3Instance();
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    setCurrentAddress(accounts[0]);
+    // Use the current account to fetch contracts
+    const contractsCreated = await getCreatedContractsByAdmin(web3, accounts[0]);
+    setContracts(contractsCreated);
+    setLoading(false);
+  };
 
   useEffect(() => {
-      const fetchContracts = async () => {
-          const web3 = await getWeb3Instance();
-          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-          setCurrentAddress(accounts[0]);
-          // Use the current account to fetch contracts
-          const contractsCreated = await getCreatedContractsByAdmin(web3, accounts[0]);
-        setContracts(contractsCreated);
-        setLoading(false);
-      };
-
       fetchContracts();
   }, []); 
 
@@ -62,6 +61,7 @@ export default function Contracts() {
     })
     .on('receipt', (receipt) => {
       console.log('Contract deployed at address:', receipt.contractAddress);
+      fetchContracts();
     })
     .on('error', (error) => {
       console.error('Error deploying contract:', error);

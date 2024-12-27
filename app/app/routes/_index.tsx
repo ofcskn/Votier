@@ -15,8 +15,12 @@ export default function Index() {
 
   return (
     <>
-      <div style={{display: 'block'}} className="nav-buttons">
+    <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+      <div style={{textAlign:'center'}} className="nav-buttons">
+        <h1 style={{ color: '#888', fontSize: 48, fontFamily: 'sans-serif'}}>Votier</h1>
+        <h2 style={{ color: '#666', fontSize: 32, fontFamily: 'sans-serif', marginBottom: 25}}>The Blockchain Voting System</h2>
         <a style={style.navButtonStyle} href="/contracts">Contracts</a>
+     </div>
     </div>
     </>
   );

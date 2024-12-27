@@ -23,29 +23,29 @@ export default function Votes() {
   const votingContractAddress = data.address; 
   const [votesLoading, setVotesLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchVoteEvents = async () => {
-        const web3 = await getWeb3Instance();
-        let contract;
-        if(votingContractAddress != "" && votingContractAddress != undefined){
-          contract = await getContractInstanceByAddress(web3, votingContractAddress);
-        }
-        else {
-          contract = await getContractInstance(web3);
-        }
-        contract.getPastEvents('Voted', {
-          fromBlock: 0,   // Starting block (can change based on your needs)
-          toBlock: 'latest'  // You can specify the latest block or a specific block
-      })
-      .then(events => {
-          setVotes(events);
-          setVotesLoading(false);
-      })
-      .catch(err => {
-          console.error('Error fetching past events:', err);
-      });
-    };
+  const fetchVoteEvents = async () => {
+    const web3 = await getWeb3Instance();
+    let contract;
+    if(votingContractAddress != "" && votingContractAddress != undefined){
+      contract = await getContractInstanceByAddress(web3, votingContractAddress);
+    }
+    else {
+      contract = await getContractInstance(web3);
+    }
+    contract.getPastEvents('Voted', {
+      fromBlock: 0,   // Starting block (can change based on your needs)
+      toBlock: 'latest'  // You can specify the latest block or a specific block
+    })
+    .then(events => {
+        setVotes(events);
+        setVotesLoading(false);
+    })
+    .catch(err => {
+        console.error('Error fetching past events:', err);
+    });
+  };
 
+  useEffect(() => {
     fetchVoteEvents();
   }, []);
 

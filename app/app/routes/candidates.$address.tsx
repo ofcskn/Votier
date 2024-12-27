@@ -61,10 +61,34 @@ export default function Candidates() {
     }
   }
  
+  const fetchCandidates = async () => {
+    try {
+      const web3 = await getWeb3Instance();
+      const contract = await getContractInstanceByAddress(web3, data.address);
+      const candidateData = await contract.methods.getAllCandidates().call();
+      await setCandidatesLoading(false);
+
+      const maxCandidatesCount = await contract.methods.maxCandidatesCount().call();
+      setMaxCandidatesCount(maxCandidatesCount.toString());
+      setCandidates(candidateData);
+    } catch (error) {
+      setErrorText(error);
+      setOpen(true);
+      console.error('Error fetching candidates:', error);
+    }
+  };
+
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') return;
     setOpen(false);
   };
+
+  function updateVoteCount(candidateId, newVoteCount) {
+    setVoteCounts(prevVoteCounts => ({
+        ...prevVoteCounts,
+        [candidateId]: newVoteCount,
+    }));
+  }
 
   const addCandidate = async ()=> {
     if ( candidateName != null && candidateName != ""){
@@ -76,6 +100,8 @@ export default function Candidates() {
         const candidateCountData = await contract.methods.getAllCandidates().call();
         setCandidates(candidateCountData);
         setCandidateName("");
+        fetchCandidates();
+
       } catch (error) {
         console.log(error);
       setErrorText(error.message);
@@ -83,24 +109,8 @@ export default function Candidates() {
       }
     }
   }
+  
   useEffect(() => {
-    const fetchCandidates = async () => {
-      try {
-        const web3 = await getWeb3Instance();
-        const contract = await getContractInstanceByAddress(web3, data.address);
-        const candidateData = await contract.methods.getAllCandidates().call();
-        await setCandidatesLoading(false);
-
-        const maxCandidatesCount = await contract.methods.maxCandidatesCount().call();
-        setMaxCandidatesCount(maxCandidatesCount.toString());
-        setCandidates(candidateData);
-      } catch (error) {
-        setErrorText(error);
-        setOpen(true);
-        console.error('Error fetching candidates:', error);
-      }
-    };
-
     fetchCandidates();
   }, []);
 
