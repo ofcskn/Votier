@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "dotenv": "^16.4.7",
     "truffle": "^5.11.5"
   }
 }

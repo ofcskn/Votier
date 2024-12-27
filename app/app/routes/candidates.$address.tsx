@@ -1,6 +1,6 @@
 import { json, LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useEffect, useState } from 'react';
-import { getWeb3Instance, getContractInstance } from '../../utils/web3.js';
+import { getWeb3Instance, getContractInstanceByAddress } from '../../utils/web3';
 import Alert from '@mui/material/Alert';
 import { Snackbar } from "@mui/material";
 import { Link, useLoaderData } from "@remix-run/react";
@@ -22,26 +22,41 @@ export default function Candidates() {
   const [errorText, setErrorText] = useState("");
   const [candidateName, setCandidateName] = useState("");
   const [candidates, setCandidates] = useState([]);
+  const [winner, setWinner] = useState("");
   const [open, setOpen] = useState(false);
   const [maxCandidatesCount, setMaxCandidatesCount] = useState("");
   
   const data = useLoaderData<typeof loader>();
   const votingContractAddress = data.address; 
 
+  const getWinner = async() => {
+    try {
+      const web3 = await getWeb3Instance();
+      const contract = await getContractInstanceByAddress(web3, data.address);
+      
+      const winner = await contract.methods.getWinner().call();
+      setWinner(winner.winnerName + " - " + winner.highestVotes + " votes");
+    } catch (error) {
+      setErrorText(error.message);
+      setOpen(true);
+      console.error('Error calling getWinner :', error);
+    }
+  }
+ 
+
   const voteCandidate = async(candidate) => {
     try {
       const web3 = await getWeb3Instance();
-      const contract = await getContractInstance(web3);
-      
+      const contract = await getContractInstanceByAddress(web3, data.address);
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const candidateData = await contract.methods.vote(candidate[0]).send({ from: accounts[0], gas: 300000});
+      const candidateData = await contract.methods.vote(candidate[0], Date.now()).send({ from: accounts[0], gas: 300000});
       const candidateCountData = await contract.methods.getAllCandidates().call();
+      const creationTime = await contract.methods.creationTime().call();
       setCandidates(candidateCountData);
     } catch (error) {
       setErrorText(error.message);
       setOpen(true);
-      console.error('Error adding a new candidate:', name);
-      console.error('Error adding a new candidate:', error.message);
+      console.error('Error voting a new candidate:', error.message);
     }
   }
  
@@ -54,13 +69,14 @@ export default function Candidates() {
     if ( candidateName != null && candidateName != ""){
       try {
         const web3 = await getWeb3Instance();
-        const contract = await getContractInstance(web3);
-        
+        const contract = await getContractInstanceByAddress(web3, data.address);
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         const candidateData = await contract.methods.addCandidate(candidateName).send({ from: accounts[0], gas: 300000});
         const candidateCountData = await contract.methods.getAllCandidates().call();
         setCandidates(candidateCountData);
+        setCandidateName("");
       } catch (error) {
+        console.log(error);
       setErrorText(error.message);
         setOpen(true);
       }
@@ -70,7 +86,7 @@ export default function Candidates() {
     const fetchCandidates = async () => {
       try {
         const web3 = await getWeb3Instance();
-        const contract = await getContractInstance(web3);
+        const contract = await getContractInstanceByAddress(web3, data.address);
         const candidateData = await contract.methods.getAllCandidates().call();
 
         const maxCandidatesCount = await contract.methods.maxCandidatesCount().call();
@@ -120,7 +136,8 @@ export default function Candidates() {
         ))}
       </ul>
       <input placeholder="Candidate Name" style={{background:'#fff', padding:"10px", height: 50, borderRadius: 16, color: '#000', marginRight: 10}} value={candidateName} onChange={e => setCandidateName(e.target.value)} />
-      <button style={{background: '#fff', color: '#000', padding: "8px 8px", borderRadius: 16, fontSize: 24}} onClick={addCandidate}>Add Candidate</button>
+      <button style={{background: '#fff', color: '#000', padding: "8px 8px", borderRadius: 16, fontSize: 24, marginRight: 10}} onClick={addCandidate}>Add Candidate</button>
+      <button style={{background: '#fff', color: '#000', padding: "8px 8px", borderRadius: 16, fontSize: 24}} onClick={getWinner}>{winner == "" ? "Get Winner" : winner}</button>
     </div>
     </>
   );

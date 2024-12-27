@@ -1,6 +1,6 @@
 import { LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useEffect, useState } from 'react';
-import { getWeb3Instance, getContractInstance, getContractInstanceByAddress } from '../../utils/web3.js';
+import { getWeb3Instance, getContractInstance, getContractInstanceByAddress } from '../../utils/web3';
 import { Link, useLoaderData } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {
@@ -37,7 +37,6 @@ export default function Votes() {
           toBlock: 'latest'  // You can specify the latest block or a specific block
       })
       .then(events => {
-          console.log('Past events:', events);
           setVotes(events);
       })
       .catch(err => {
