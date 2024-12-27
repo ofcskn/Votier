@@ -21,6 +21,7 @@ export default function Votes() {
   const [votes, setVotes] = useState([]);
   const data = useLoaderData<typeof loader>();
   const votingContractAddress = data.address; 
+  const [votesLoading, setVotesLoading] = useState(true);
 
   useEffect(() => {
     const fetchVoteEvents = async () => {
@@ -38,6 +39,7 @@ export default function Votes() {
       })
       .then(events => {
           setVotes(events);
+          setVotesLoading(false);
       })
       .catch(err => {
           console.error('Error fetching past events:', err);
@@ -57,14 +59,16 @@ export default function Votes() {
       <div style={{ marginBottom:  20}}>
         <h1 style={{fontSize:32}} className="title">Votes ({votes.length})</h1>
       </div>
-      <ul style={{ marginBottom:  20}} className="candidate-items">
-        {votes.map((vote, index) => (
-          <div style={{border:'1px solid #555', borderRadius: 10, padding: 10, marginBottom: 10}} key={index}>
-            <p>Address: {vote.address}</p>
-            <p>Signature: {vote.signature}</p>
-          </div>
-        ))}
-      </ul>
+      {votes.length > 0 && votesLoading == false ? <>
+        <ul style={{ marginBottom:  20}} className="candidate-items">
+          {votes.map((vote, index) => (
+            <div style={{border:'1px solid #555', borderRadius: 10, padding: 10, marginBottom: 10}} key={index}>
+              <p>Address: {vote.address}</p>
+              <p>Signature: {vote.signature}</p>
+            </div>
+          ))}
+        </ul>
+      </> : votesLoading == true ? <><span>...loading...</span></> : "No votes."}
     </div>
     </>
   );

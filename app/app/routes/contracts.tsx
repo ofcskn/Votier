@@ -16,6 +16,8 @@ export default function Contracts() {
   const [contracts, setContracts] = useState([]); 
   const [currentAddress, setCurrentAddress] = useState([]); 
   const [endVotingDate, setEndVotingDate] = useState(""); 
+  const [loading, setLoading] = useState(true); 
+
 
   useEffect(() => {
       const fetchContracts = async () => {
@@ -25,6 +27,7 @@ export default function Contracts() {
           // Use the current account to fetch contracts
           const contractsCreated = await getCreatedContractsByAdmin(web3, accounts[0]);
         setContracts(contractsCreated);
+        setLoading(false);
       };
 
       fetchContracts();
@@ -81,7 +84,8 @@ export default function Contracts() {
       <input placeholder="Max Candidates" style={{background:'#fff', padding:"10px", height: 50, borderRadius: 16, color: '#000', marginRight: 10}} value={maxCandidatesCount} onChange={e => setMaxCandidatesCount(e.target.value)} />
       <button style={style.navButtonStyle} onClick={()=> createContract()}>Create a contract for {maxCandidatesCount} candidates</button>
     </div>
-    <ul style={{ marginTop:  20}} className="candidate-items">
+    {contracts.length > 0 && loading == false ? <>
+      <ul style={{ marginTop:  20}} className="candidate-items">
         {contracts.map((contract, index) => (
           <div style={{border:'1px solid #555', borderRadius: 10, padding: 10, marginBottom: 10, display:'flex', justifyContent: 'space-between'}} key={index}>
             <Link to={`/candidates/${contract}`}>
@@ -90,6 +94,7 @@ export default function Contracts() {
           </div>
         ))}
       </ul>
+    </> : loading == true ? <><span>...loading...</span></> : "no contracts"}
     </div>
     </>
   );

@@ -22,6 +22,7 @@ export default function Candidates() {
   const [errorText, setErrorText] = useState("");
   const [candidateName, setCandidateName] = useState("");
   const [candidates, setCandidates] = useState([]);
+  const [candidatesLoading, setCandidatesLoading] = useState(true);
   const [winner, setWinner] = useState("");
   const [open, setOpen] = useState(false);
   const [maxCandidatesCount, setMaxCandidatesCount] = useState("");
@@ -88,11 +89,11 @@ export default function Candidates() {
         const web3 = await getWeb3Instance();
         const contract = await getContractInstanceByAddress(web3, data.address);
         const candidateData = await contract.methods.getAllCandidates().call();
+        await setCandidatesLoading(false);
 
         const maxCandidatesCount = await contract.methods.maxCandidatesCount().call();
         setMaxCandidatesCount(maxCandidatesCount.toString());
-
-      setCandidates(candidateData);
+        setCandidates(candidateData);
       } catch (error) {
         setErrorText(error);
         setOpen(true);
@@ -120,20 +121,22 @@ export default function Candidates() {
         <p style={{fontSize: 16}}>Choose a candidate for the Votier election. The list of candidates sorted by name! Max candidates can be {maxCandidatesCount}.</p>
       </div>
       <ul style={{ marginBottom:  20}} className="candidate-items">
-        {candidates.sort((a, b) => {
-          // Compare names in descending order
-          if (a.name > b.name) return 1;
-          if (a.name < b.name) return -1;
-          return 0;
-        }).map((candidate, index) => (
-          <div style={{border:'1px solid #555', borderRadius: 10, padding: 10, marginBottom: 10, display:'flex', justifyContent: 'space-between'}} key={index}>
-            <p style={{fontSize: 32}}>{candidate.name}</p>
-            <div>
-              <span style={{background:'#fff', color: '#000', padding: 8, borderRadius: 50, marginRight: 15, fontSize: 24}}>{candidate.voteCount.toString()}</span>
-              <button onClick={()=> voteCandidate(candidate)}>Vote this</button>
+        {candidates.length > 0 && candidatesLoading == false ? <>
+            {candidates.sort((a, b) => {
+            // Compare names in descending order
+            if (a.name > b.name) return 1;
+            if (a.name < b.name) return -1;
+            return 0;
+          }).map((candidate, index) => (
+            <div style={{border:'1px solid #555', borderRadius: 10, padding: 10, marginBottom: 10, display:'flex', justifyContent: 'space-between'}} key={index}>
+              <p style={{fontSize: 32}}>{candidate.name}</p>
+              <div>
+                <span style={{background:'#fff', color: '#000', padding: 8, borderRadius: 50, marginRight: 15, fontSize: 24}}>{candidate.voteCount.toString()}</span>
+                <button onClick={()=> voteCandidate(candidate)}>Vote this</button>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </> : candidatesLoading == true ? "...loading..." : "There is no candidates. Please add a candidate."}
       </ul>
       <input placeholder="Candidate Name" style={{background:'#fff', padding:"10px", height: 50, borderRadius: 16, color: '#000', marginRight: 10}} value={candidateName} onChange={e => setCandidateName(e.target.value)} />
       <button style={{background: '#fff', color: '#000', padding: "8px 8px", borderRadius: 16, fontSize: 24, marginRight: 10}} onClick={addCandidate}>Add Candidate</button>
