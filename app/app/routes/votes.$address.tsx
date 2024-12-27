@@ -46,8 +46,20 @@ export default function Votes() {
   };
 
   useEffect(() => {
+    // Set up interval to call the function every 5 seconds
+    const intervalId = setInterval(() => {
+      fetchVoteEvents();
+    }, 5000); // 5000 milliseconds = 5 seconds
+
     fetchVoteEvents();
-  }, []);
+
+
+    // Clean up the interval when the component is unmounted
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []); // Empty dependency array ensures this runs once when the component mounts
+
 
   return (
     <>

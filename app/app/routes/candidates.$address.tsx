@@ -30,37 +30,6 @@ export default function Candidates() {
   const data = useLoaderData<typeof loader>();
   const votingContractAddress = data.address; 
 
-  const getWinner = async() => {
-    try {
-      const web3 = await getWeb3Instance();
-      const contract = await getContractInstanceByAddress(web3, data.address);
-      
-      const winner = await contract.methods.getWinner().call();
-      setWinner(winner.winnerName + " - " + winner.highestVotes + " votes");
-    } catch (error) {
-      setErrorText(error.message);
-      setOpen(true);
-      console.error('Error calling getWinner :', error);
-    }
-  }
- 
-
-  const voteCandidate = async(candidate) => {
-    try {
-      const web3 = await getWeb3Instance();
-      const contract = await getContractInstanceByAddress(web3, data.address);
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const candidateData = await contract.methods.vote(candidate[0], Date.now()).send({ from: accounts[0], gas: 300000});
-      const candidateCountData = await contract.methods.getAllCandidates().call();
-      const creationTime = await contract.methods.creationTime().call();
-      setCandidates(candidateCountData);
-    } catch (error) {
-      setErrorText(error.message);
-      setOpen(true);
-      console.error('Error voting a new candidate:', error.message);
-    }
-  }
- 
   const fetchCandidates = async () => {
     try {
       const web3 = await getWeb3Instance();
@@ -78,17 +47,42 @@ export default function Candidates() {
     }
   };
 
+  const getWinner = async() => {
+    try {
+      const web3 = await getWeb3Instance();
+      const contract = await getContractInstanceByAddress(web3, data.address);
+      
+      const winner = await contract.methods.getWinner().call();
+      setWinner(winner.winnerName + " - " + winner.highestVotes + " votes");
+      alert("The winner is " + winner.winnerName + " with " + winner.highestVotes + " votes. Congrats!");
+    } catch (error) {
+      setErrorText(error.message);
+      setOpen(true);
+      console.error('Error calling getWinner :', error);
+    }
+  }
+ 
+
+  const voteCandidate = async(candidate) => {
+    try {
+      const web3 = await getWeb3Instance();
+      const contract = await getContractInstanceByAddress(web3, data.address);
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      await contract.methods.vote(candidate[0], Date.now()).send({ from: accounts[0], gas: 300000});
+      fetchCandidates();
+    } catch (error) {
+      setErrorText(error.message);
+      setOpen(true);
+      console.error('Error voting a new candidate:', error.message);
+    }
+  }
+ 
+
+
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') return;
     setOpen(false);
   };
-
-  function updateVoteCount(candidateId, newVoteCount) {
-    setVoteCounts(prevVoteCounts => ({
-        ...prevVoteCounts,
-        [candidateId]: newVoteCount,
-    }));
-  }
 
   const addCandidate = async ()=> {
     if ( candidateName != null && candidateName != ""){
@@ -96,12 +90,9 @@ export default function Candidates() {
         const web3 = await getWeb3Instance();
         const contract = await getContractInstanceByAddress(web3, data.address);
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        const candidateData = await contract.methods.addCandidate(candidateName).send({ from: accounts[0], gas: 300000});
-        const candidateCountData = await contract.methods.getAllCandidates().call();
-        setCandidates(candidateCountData);
-        setCandidateName("");
+        await contract.methods.addCandidate(candidateName).send({ from: accounts[0], gas: 300000});
         fetchCandidates();
-
+        setCandidateName("");
       } catch (error) {
         console.log(error);
       setErrorText(error.message);
@@ -111,8 +102,19 @@ export default function Candidates() {
   }
   
   useEffect(() => {
+    // Set up interval to call the function every 5 seconds
+    const intervalId = setInterval(() => {
+      fetchCandidates();
+    }, 5000); // 5000 milliseconds = 5 seconds
+
     fetchCandidates();
-  }, []);
+
+
+    // Clean up the interval when the component is unmounted
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []); // Empty dependency array ensures this runs once when the component mounts
 
   return (
     <>
