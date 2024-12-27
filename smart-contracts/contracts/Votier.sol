@@ -37,7 +37,7 @@ contract Votier {
     event CandidateAdded(uint id, string name);
 
     // Event emitted when a vote is cast
-    event Voted(address voter, uint candidateId, uint votedTime);
+    event Voted(address voter, uint indexed candidateId, uint votedTime, uint newVoteCount);
 
     event AdminInitialized(address admin); // Debugging event
     event ContractDeployed(string message); // Debugging event
@@ -94,7 +94,7 @@ contract Votier {
         candidates[_candidateId].voteCount++;
         votesCount++;
 
-        emit Voted(msg.sender, _candidateId, block.timestamp);
+        emit Voted(msg.sender, _candidateId, block.timestamp, candidates[_candidateId].voteCount);
     }
 
     // Function to get a candidate by ID (no need to manually define it)
