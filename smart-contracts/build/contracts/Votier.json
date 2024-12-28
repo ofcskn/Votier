@@ -28071,12 +28071,12 @@
         }
       },
       "links": {},
-      "address": "0xBAD43e74B7b43f99f7aF7e0E9691371A25539840",
-      "transactionHash": "0x510020dbd0db37a71f9c75c8d64b0cfc7eec077e5f2186591d359c8edfceaac5"
+      "address": "0x3e17a49feD6e9191EBBD358ef6cEa20b94c69E32",
+      "transactionHash": "0x64739ead9c4920b0ed7b65aeb266af998c9c02d397cf570f9ea989984f8c8818"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-12-28T02:14:42.778Z",
+  "updatedAt": "2024-12-28T02:19:10.189Z",
   "networkType": "ethereum",
   "devdoc": {
     "details": "A blockchain-based voting system for selecting the best candidate. Admins can add candidates, and users can vote for their preferred candidate. Ensures transparency and immutability of the voting process.",
