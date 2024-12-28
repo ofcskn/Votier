@@ -26,9 +26,24 @@ export default function Candidates() {
   const [winner, setWinner] = useState("");
   const [open, setOpen] = useState(false);
   const [maxCandidatesCount, setMaxCandidatesCount] = useState("");
+  const [tieBreakerStatus, setTieBreakerStatus] = useState(false);
   
   const data = useLoaderData<typeof loader>();
   const votingContractAddress = data.address; 
+
+  const fetchTieBreakerStatus = async () =>  {
+    try {
+      const web3 = await getWeb3Instance();
+      const contract = await getContractInstanceByAddress(web3, data.address);
+      const isTieBreakerStatus = await contract.methods.isTieBreakerActive().call();
+      console.log(isTieBreakerStatus);
+      await setTieBreakerStatus(isTieBreakerStatus);
+    } catch (error) {
+      setErrorText(error);
+      setOpen(true);
+      console.error('Error fetching isTieBreakerStatus:', error);
+    }
+  }
 
   const fetchCandidates = async () => {
     try {
@@ -47,12 +62,42 @@ export default function Candidates() {
     }
   };
 
+  const startTieBreaker = async() => {
+    try {
+      const web3 = await getWeb3Instance();
+      const contract = await getContractInstanceByAddress(web3, data.address);
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      await contract.methods.startTieBreaker().send({ from: accounts[0], gas: 300000});
+      await setTieBreakerStatus(true);
+      alert("Tie breaker is started.");
+    } catch (error) {
+      setErrorText(error.message);
+      setOpen(true);
+      console.error('Error calling startTieBreaker():', error);
+    }
+  }
+
+  const startVotingManually = async() => {
+    try {
+      const web3 = await getWeb3Instance();
+      const contract = await getContractInstanceByAddress(web3, data.address);
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      await contract.methods.startVoting().send({ from: accounts[0], gas: 300000});
+      alert("The voting is started manually.");
+    } catch (error) {
+      setErrorText(error.message);
+      setOpen(true);
+      console.error('Error calling startVotingManually():', error);
+    }
+  }
+
   const getWinner = async() => {
     try {
       const web3 = await getWeb3Instance();
       const contract = await getContractInstanceByAddress(web3, data.address);
-      
-      const winner = await contract.methods.getWinner().call();
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const winner = await contract.methods.getWinner().call({ from: accounts[0], gas: 300000});
+      console.log(winner);
       setWinner(winner.winnerName + " - " + winner.highestVotes + " votes");
       alert("The winner is " + winner.winnerName + " with " + winner.highestVotes + " votes. Congrats!");
     } catch (error) {
@@ -71,6 +116,7 @@ export default function Candidates() {
       await contract.methods.vote(candidate[0], Date.now()).send({ from: accounts[0], gas: 300000});
       fetchCandidates();
     } catch (error) {
+      console.log(error);
       setErrorText(error.message);
       setOpen(true);
       console.error('Error voting a new candidate:', error.message);
@@ -105,10 +151,11 @@ export default function Candidates() {
     // Set up interval to call the function every 5 seconds
     const intervalId = setInterval(() => {
       fetchCandidates();
+      fetchTieBreakerStatus();
     }, 5000); // 5000 milliseconds = 5 seconds
 
     fetchCandidates();
-
+    fetchTieBreakerStatus();
 
     // Clean up the interval when the component is unmounted
     return () => {
@@ -151,9 +198,13 @@ export default function Candidates() {
         </> : candidatesLoading == true ? "...loading..." : "There is no candidates. Please add a candidate."}
       </ul>
       <input placeholder="Candidate Name" style={{background:'#fff', padding:"10px", height: 50, borderRadius: 16, color: '#000', marginRight: 10}} value={candidateName} onChange={e => setCandidateName(e.target.value)} />
-      <button style={{background: '#fff', color: '#000', padding: "8px 8px", borderRadius: 16, fontSize: 24, marginRight: 10}} onClick={addCandidate}>Add Candidate</button>
-      <button style={{background: '#fff', color: '#000', padding: "8px 8px", borderRadius: 16, fontSize: 24}} onClick={getWinner}>{winner == "" ? "Get Winner" : winner}</button>
-    </div>
+      <button style={{background: '#fff', color: '#000', padding: "8px 8px", borderRadius: 16, fontSize: 24, marginRight: 10, backgroundColor: '#fff'}} onClick={addCandidate}>Add Candidate</button>
+      {tieBreakerStatus == false ? <>
+        <button style={{background: '#fff', color: '#000', padding: "8px 8px", borderRadius: 16, fontSize: 24, marginRight: 10, backgroundColor: '#5d8'}} onClick={startTieBreaker}>Start Tie Breaker</button>
+      </> : ""} 
+      <button style={{background: '#fff', color: '#000', padding: "8px 8px", borderRadius: 16, fontSize: 24, marginRight: 10}} onClick={getWinner}>{winner == "" ? "Get Winner" : winner}</button>
+      <button style={{background: '#fff', color: '#000', padding: "8px 8px", borderRadius: 16, fontSize: 24, marginRight: 10, backgroundColor: '#fff'}} onClick={startVotingManually}>Start Voting</button>
+      </div>
     </>
   );
 }
